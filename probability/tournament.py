@@ -6,16 +6,14 @@ Project: Probability Calculations for Tournament Settings
 Date: March 2025
 
 Summary:
-TODO
+Compute the odds of a certain event happening in a tournament bracket.
 """
 
 
 from dataclasses import dataclass
 from enum import StrEnum, auto
 from math import prod
-from typing import Callable, Generator, List, Optional, Tuple
-
-from probability import choose, permutation
+from typing import Any, Callable, Generator, Iterable, List, Optional, Tuple
 
 
 class Region(StrEnum):
@@ -56,14 +54,14 @@ def choose_matchup(
 
     Args:
         teams (List[Team]):
-            list of teams in the bracket.
+            List of teams in the bracket.
         rules (List[Callable[[Team, Team], bool]]):
-            list of rules that all have to be satisfied.
+            List of rules that all have to be satisfied.
 
     Yields:
         out (Generator[Tuple[List[Tuple[Team, Team]], List[Team]], None, None]):
-            - a possible matchup
-            - a list with the remaining teams.
+            - A possible matchup
+            - A list with the remaining teams.
     """
     team1: Team = teams[0]
     other_teams: List[Team] = teams[1:]
@@ -79,13 +77,13 @@ def generate_brackets(
 
     Args:
         teams (List[Team]):
-            list of teams in the bracket.
+            List of teams in the bracket.
         rules (Optional[List[Callable[[Team, Team], bool]]], optional):
-            list of rules that all have to be satisfied. Defaults to None.
+            List of rules that all have to be satisfied. Defaults to None.
 
     Yields:
         out (Generator[List[Tuple[Team, Team]], None, None]):
-            a possible bracket given the list of teams.
+            A possible bracket given the list of teams.
     """
     if rules is None:
         rules = []
@@ -108,8 +106,8 @@ def diff_region(a: Team, b: Team) -> bool:
     """Check if the region of two teams is different
 
     Args:
-        a (Team): team a
-        b (Team): team b
+        a (Team): Team A
+        b (Team): Team B
 
     Returns:
         bool: True if the regions are different, False otherwise.
@@ -122,12 +120,12 @@ def invalid_matchup(a: Team, b: Team) -> Callable[[Team, Team], bool]:
     given two teams that are not a and b.
 
     Args:
-        a (Team): team a
-        b (Team): team b
+        a (Team): Team A
+        b (Team): Team B
 
     Returns:
         out (Callable[[Team, Team], bool]):
-            function that returns True if it does not see a and b again, False otherwise.
+            Function that returns True if it does not see a and b again, False otherwise.
     """
     return lambda x, y: not ((x == a and y == b) or (x == b and y == a))
 
@@ -136,10 +134,10 @@ def prod_odd_to(n: int) -> int:
     """Get the product of all odd numbers up to n.
 
     Args:
-        n (int): upper limit of the odd numbers to multiply.
+        n (int): Upper limit of the odd numbers to multiply.
 
     Returns:
-        int: product of all odd numbers up to n.
+        int: Product of all odd numbers up to n.
     """
     return prod(i for i in range(1, n, 2))
 
@@ -151,9 +149,9 @@ def bracket_has_event(
 
     Args:
         bracket (List[Tuple[Team, Team]]):
-            bracket to check in.
+            Bracket to check in.
         event (Tuple[Team, Team]):
-            event to find.
+            Event to find.
 
     Returns:
         bool: True if bracket contains the event, False otherwise.
@@ -168,6 +166,7 @@ def brute_force(
     teams: List[Team],
     events: Optional[List[Tuple[Team, Team]]] = None,
     rules: Optional[List[Callable[[Team, Team], bool]]] = None,
+    use_any: bool = False,
     debug: bool = False,
 ) -> Tuple[int, int]:
     """Compute the odds of specific events occurring within a bracket by
@@ -175,22 +174,25 @@ def brute_force(
 
     Args:
         teams (List[Team]):
-            list of teams in the bracket.
+            List of teams in the bracket.
         events (Optional[List[Tuple[Team, Team]]]):
-            list of specific events that we want to see. Defaults to None.
+            List of specific events that we want to see. Defaults to None.
         rules (Optional[List[Callable[[Team, Team], bool]]], optional):
-            list of rules that all have to be satisfied. Defaults to None.
+            List of rules that all have to be satisfied. Defaults to None.
+        use_any (bool, optional):
+            Flag to specify if all or any events have to be satisfied. Defaults to False.
         debug (bool, optional):
-            flag to specify if brackets should be printed. Defaults to False.
+            Flag to specify if brackets should be printed. Defaults to False.
     Returns:
         out (Tuple[int, int]):
-            - the number of times all events were satisfied.
-            - the number of brackets that satisfy the rules.
+            - The number of times all events were satisfied.
+            - The number of brackets that satisfy the rules.
     """
     if events is None:
         events = []
     if rules is None:
         rules = []
+    func: Callable[[Iterable], bool] = any if use_any else all
 
     # Iterate over all brackets that satisfy rules.
     total: int = 0
@@ -202,7 +204,7 @@ def brute_force(
         line: str = f"[{", ".join([f"{a} vs {b}" for a, b in bracket])}]"
 
         # Check if a bracket satisfies all events.
-        if all(bracket_has_event(bracket, event) for event in events):
+        if func(bracket_has_event(bracket, event) for event in events):
             satisfies += 1
 
             line += " <-"
@@ -216,51 +218,6 @@ def brute_force(
     return satisfies, total
 
 
-def mathematics(
-    teams: List[Team],
-    events: Optional[List[Tuple[Team, Team]]] = None,
-    rules: Optional[List[Callable[[Team, Team], bool]]] = None,
-    debug: bool = False,
-) -> Tuple[int, int]:
-    """Compute the odds of specific events occurring within a bracket using
-    mathematics.
-
-    Args:
-        teams (List[Team]):
-            list of teams in the bracket.
-        events (Optional[List[Tuple[Team, Team]]]):
-            list of specific events that we want to see. Defaults to None.
-        rules (Optional[List[Callable[[Team, Team], bool]]], optional):
-            list of rules that all have to be satisfied. Defaults to None.
-        debug (bool, optional):
-            flag to specify if brackets should be printed. Defaults to False.
-    Returns:
-        out (Tuple[int, int]):
-            - the number of times all events were satisfied.
-            - the number of brackets that satisfy the rules.
-    """
-    if events is None:
-        events = []
-    if rules is None:
-        rules = []
-
-    num_teams: int = len(teams)
-    num_events: int = len(events)
-    num_rules: int = len(rules)
-
-    satisfies: int = prod_odd_to(num_teams - 2 * num_events)
-
-    sign: int = 1
-    total: int = prod_odd_to(num_teams)
-    delta: int = 0
-    for i in range(1, num_rules + 1):
-        n: int = num_teams - 2 * i
-        delta += sign * prod_odd_to(n) * choose(num_rules, i)
-        sign = -sign
-
-    return satisfies, total - delta
-
-
 def print_odds(
     description: str,
     algorithm: Callable[
@@ -269,61 +226,45 @@ def print_odds(
             List[Tuple[Team, Team]],
             List[Callable[[Team, Team], bool]],
             bool,
+            bool,
         ],
         Tuple[int, int],
     ],
-    teams: List[Team],
-    events: Optional[List[Tuple[Team, Team]]] = None,
-    rules: Optional[List[Callable[[Team, Team], bool]]] = None,
-    debug: bool = False,
+    *args: Any,
+    **kwargs: Any,
 ) -> None:
     """Print the odds of certain events occurring within a bracket.
 
     Args:
-        description (str):
-            description of the conditions.
-        algorithm (Callable[ [teams, events, rules, debug], Tuple[int, int] ]):
-            algorithm to use.
-        teams (List[Team]):
-            list of teams in the bracket.
-        events (Optional[List[Tuple[Team, Team]]]):
-            list of specific events that we want to see. Defaults to None.
-        rules (Optional[List[Callable[[Team, Team], bool]]], optional):
-            list of rules that all have to be satisfied. Defaults to None.
-        debug (bool, optional):
-            flag to specify if brackets should be printed. Defaults to False.
+        Description (str):
+            Description of the conditions.
+        Algorithm (Callable[ [teams, events, rules, debug], Tuple[int, int] ]):
+            Algorithm to use.
+        *args (Any):
+            Positional arguments for the algorithm.
+        **kwargs (Any):
+            Keyword arguments for the algorithm.
     """
-    if events is None:
-        events = []
-    if rules is None:
-        rules = []
-
     numerator: int
     denominator: int
 
-    numerator, denominator = algorithm(teams, events, rules, debug)
-    print(f"{description}: {numerator}/{denominator}")
+    numerator, denominator = algorithm(*args, **kwargs)
+    print(f"{description}: {numerator}/{denominator}\n")
 
 
-def test(
-    algorithm: Callable[
-        [List[Team], List[Tuple[Team, Team]], List[Callable[[Team, Team], bool]], bool],
-        Tuple[int, int],
-    ],
-) -> None:
-    """Test the accuracy of the algorithm."""
+def test_brute_force() -> None:
+    """Test the accuracy of the brute_force() function."""
     teams: List[Team]
     events: List[Tuple[Team, Team]]
     rules: List[Callable[[Team, Team], bool]]
-    debug: bool = False
 
     teams = [T1, GEN, HLE, DK, G2, FNC, BLG, FLY]
     events = [(T1, G2)]
     rules = []
-    assert algorithm(teams, events, rules, debug) == (15, 105)
+    assert brute_force(teams, events=events, rules=rules, debug=False) == (15, 105)
 
     rules = [diff_region]
-    assert algorithm(teams, events, rules, debug) == (6, 24)
+    assert brute_force(teams, events=events, rules=rules, debug=False) == (6, 24)
 
     rules = [
         invalid_matchup(T1, GEN),
@@ -334,27 +275,47 @@ def test(
         invalid_matchup(HLE, DK),
         invalid_matchup(FNC, G2),
     ]
-    assert algorithm(teams, events, rules, debug) == (6, 24)
+    assert brute_force(teams, events=events, rules=rules, debug=False) == (6, 24)
 
     events = [(T1, G2)]
     rules = [invalid_matchup(T1, G2)]
-    assert algorithm(teams, events, rules, debug) == (0, 90)
+    assert brute_force(teams, events=events, rules=rules, debug=False) == (0, 90)
 
     events = [(T1, GEN), (HLE, G2)]
-    assert algorithm(teams, events, rules, debug) == (3, 90)
+    assert brute_force(teams, events=events, rules=rules, debug=False) == (3, 90)
 
     teams = [GEN, DK, G2, FNC, BLG, FLY]
     events = []
     rules = [diff_region]
-    assert algorithm(teams, events, rules, debug) == (10, 10)
+    assert brute_force(teams, events=events, rules=rules, debug=False) == (10, 10)
 
     teams = [GEN, HLE, DK, FNC, BLG, FLY]
-    assert algorithm(teams, events, rules, debug) == (6, 6)
+    assert brute_force(teams, events=events, rules=rules, debug=False) == (6, 6)
 
 
 def main() -> None:
     """Main function."""
-    test(brute_force)
+    test_brute_force()
+
+    # Example usage.
+    print_odds(
+        "Odds for T1 vs G2 when there are no same region matches",
+        brute_force,
+        teams=[T1, GEN, HLE, DK, G2, FNC, BLG, FLY],
+        events=[(T1, G2)],
+        rules=[diff_region],
+        debug=False,
+    )
+
+    print_odds(
+        "Odds for DK vs FNC or DK vs FLY occurring when there are no same region matches",
+        brute_force,
+        teams=[T1, GEN, HLE, DK, G2, FNC, BLG, FLY],
+        events=[(DK, FNC), (DK, FLY)],
+        rules=[diff_region],
+        use_any=True,
+        debug=True,
+    )
 
 
 if __name__ == "__main__":
