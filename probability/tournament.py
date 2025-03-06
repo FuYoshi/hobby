@@ -32,19 +32,56 @@ class Team:
 
     region: Region = Region.OTHER
     tag: str = ""
+    full_name: str = ""
 
     def __str__(self) -> str:
         return self.tag
 
 
-T1: Team = Team(Region.LCK, "T1 ")
-GEN: Team = Team(Region.LCK, "GEN")
-HLE: Team = Team(Region.LCK, "HLE")
-DK: Team = Team(Region.LCK, "DK ")
-G2: Team = Team(Region.LEC, "G2 ")
-FNC: Team = Team(Region.LEC, "FNC")
-BLG: Team = Team(Region.LPL, "BLG")
-FLY: Team = Team(Region.LCS, "FLY")
+# LCK Teams. cSpell: disable
+BRO: Team = Team(Region.LCK, "BRO", "BRION")
+DK: Team = Team(Region.LCK, "DK ", "Dplus Kia")
+DRX: Team = Team(Region.LCK, "DRX", "DRX")
+FX: Team = Team(Region.LCK, "FX ", "FEARX")
+DNF: Team = Team(Region.LCK, "DNF", "Freecs")
+GEN: Team = Team(Region.LCK, "GEN", "Gen.G Esports")
+HLE: Team = Team(Region.LCK, "HLE", "Hanwha Life Esports")
+KT: Team = Team(Region.LCK, "KT ", "KT Rolster")
+NS: Team = Team(Region.LCK, "NS ", "Nongshim RedForce")
+T1: Team = Team(Region.LCK, "T1 ", "T1")
+
+# LEC Teams.
+BDS: Team = Team(Region.LEC, "BDS", "Team BDS")
+FNC: Team = Team(Region.LEC, "FNC", "Fnatic")
+G2: Team = Team(Region.LEC, "G2 ", "G2 Esports")
+GX: Team = Team(Region.LEC, "GX ", "GiantX")
+HR: Team = Team(Region.LEC, "HR ", "Team Heretics")
+KC: Team = Team(Region.LEC, "KC ", "Karmine Corp")
+KOI: Team = Team(Region.LEC, "KOI", "KOI")
+RGE: Team = Team(Region.LEC, "RGE", "Rogue")
+SK: Team = Team(Region.LEC, "SK ", "SK Gaming")
+VIT: Team = Team(Region.LEC, "VIT", "Team Vitality")
+
+# LPL Teams.
+AL: Team = Team(Region.LPL, "AL ", "Anyone's Legend")
+BLG: Team = Team(Region.LPL, "BLG", "Bilibili Gaming")
+EDG: Team = Team(Region.LPL, "EDG", "Edward Gaming")
+FPX: Team = Team(Region.LPL, "FPX", "FunPlus Phoenix")
+IG: Team = Team(Region.LPL, "IG ", "Invictus Gaming")
+JDG: Team = Team(Region.LPL, "JDG", "JD Gaming")
+LNG: Team = Team(Region.LPL, "LNG", "LNG Esports")
+NIP: Team = Team(Region.LPL, "NIP", "Ninjas in Pyjamas")
+OMG: Team = Team(Region.LPL, "OMG", "Oh My God")
+RNG: Team = Team(Region.LPL, "RNG", "Royal Never Give Up")
+WE: Team = Team(Region.LPL, "WE ", "Team WE")
+TOP: Team = Team(Region.LPL, "TOP ", "Top Esports")
+WBG: Team = Team(Region.LPL, "WBG", "Weibo Gaming")
+
+# LCS Teams. cSpell: enable
+C9: Team = Team(Region.LCS, "C9 ", "Cloud9")
+FLY: Team = Team(Region.LCS, "FLY", "FlyQuest")
+DSG: Team = Team(Region.LCS, "DSG", "Disguised")
+TL: Team = Team(Region.LCS, "TL ", "Team Liquid")
 
 
 def choose_matchup(
